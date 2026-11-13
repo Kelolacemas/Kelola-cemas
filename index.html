@@ -1,0 +1,577 @@
+<!doctype html>
+<html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Kelola Cemas</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Figtree:wght@400;500;600;700&display=swap"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style><style>
+/* Layout: satu kolom sempit seperti aplikasi ponsel. Dua peran (siswa, guru BK) memakai header yang sama, menu berbeda. Kotak bantuan menutup setiap halaman materi. */
+:root {
+  --bg: #f1f6f5;
+  --surface: #ffffff;
+  --fg: #12302b;
+  --muted: #4a6560;
+  --line: #cddcd9;
+  --accent: #1d776a;
+  --accent-soft: #dcefeb;
+  --on-accent: #ffffff;
+  --warm: #9a5a0c;
+  --warm-soft: #fcebcc;
+  --warm-line: #e9c786;
+  --font-display: "Bricolage Grotesque", "Trebuchet MS", system-ui, sans-serif;
+  --font-body: "Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --radius: 14px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e1b19; --surface: #162725; --fg: #e3f0ed; --muted: #9bb6b0; --line: #2a4440;
+    --accent: #5cc4b2; --accent-soft: #1c3935; --on-accent: #07211d;
+    --warm: #f0b35a; --warm-soft: #33291a; --warm-line: #5f4a24;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0e1b19; --surface: #162725; --fg: #e3f0ed; --muted: #9bb6b0; --line: #2a4440;
+  --accent: #5cc4b2; --accent-soft: #1c3935; --on-accent: #07211d;
+  --warm: #f0b35a; --warm-soft: #33291a; --warm-line: #5f4a24;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--fg);
+  font-family: var(--font-body); font-size: 17px; line-height: 1.6;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 40px;
+}
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--surface); }
+.wrap { max-width: 640px; margin: 0 auto; }
+h1, h2, h3 { font-family: var(--font-display); line-height: 1.2; text-wrap: balance; margin: 0; }
+h1 { font-size: 2rem; }
+h2 { font-size: 1.5rem; }
+h3 { font-size: 1.1rem; }
+p { margin: 0; }
+a { color: var(--accent); }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; border-radius: 6px; }
+
+/* header */
+header.top {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 9;
+  background: var(--surface); border-bottom: 1px solid var(--line);
+  margin-inline: calc(-1 * max(16px, env(safe-area-inset-left, 0px)));
+  padding: 10px max(16px, env(safe-area-inset-right, 0px)) 10px max(16px, env(safe-area-inset-left, 0px));
+}
+.top-inner { max-width: 640px; margin: 0 auto; display: flex; flex-direction: column; gap: 8px; }
+.top-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.brand { font-family: var(--font-display); font-weight: 700; font-size: 1.2rem; text-decoration: none; color: var(--fg); display: flex; align-items: center; gap: 8px; }
+.brand svg { width: 26px; height: 26px; flex: none; }
+.userbox { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.chip { font-size: 0.85rem; font-weight: 600; background: var(--accent-soft); border-radius: 999px; padding: 4px 12px; overflow-wrap: anywhere; }
+nav { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: thin; }
+nav a {
+  flex: none; text-decoration: none; color: var(--fg); font-weight: 600; font-size: 0.9rem;
+  padding: 6px 12px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface);
+}
+nav a[aria-current="page"] { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
+nav a.warm { border-color: var(--warm-line); }
+nav a.warm[aria-current="page"] { background: var(--warm); color: var(--surface); border-color: var(--warm); }
+
+main { padding-top: 24px; display: flex; flex-direction: column; gap: 24px; }
+.view { display: flex; flex-direction: column; gap: 18px; }
+.lead { color: var(--muted); }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px; display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.note { background: var(--accent-soft); border-radius: var(--radius); padding: 14px 16px; font-size: 0.95rem; }
+.note.warm { background: var(--warm-soft); }
+.back { font-size: 0.92rem; font-weight: 600; }
+
+/* menu grid */
+.menu { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.tile {
+  display: flex; flex-direction: column; gap: 6px; text-decoration: none; color: var(--fg);
+  background: var(--surface); border: 1.5px solid var(--accent); border-radius: var(--radius); padding: 16px; min-height: 130px;
+}
+.tile b { font-family: var(--font-display); font-size: 1.15rem; }
+.tile span { color: var(--muted); font-size: 0.9rem; line-height: 1.4; }
+.tile svg { width: 30px; height: 30px; color: var(--accent); }
+.tile.warm { border-color: var(--warm); background: var(--warm-soft); }
+.tile.warm svg { color: var(--warm); }
+.tile:hover { background: var(--accent-soft); }
+.tile.warm:hover { filter: brightness(0.97); }
+
+/* buttons */
+.btn {
+  font: inherit; font-weight: 700; cursor: pointer; border-radius: 10px; padding: 10px 18px; min-height: 44px;
+  background: var(--accent); color: var(--on-accent); border: 1.5px solid var(--accent); text-decoration: none; display: inline-flex; align-items: center; justify-content: center;
+}
+.btn.ghost { background: transparent; color: var(--fg); border-color: var(--line); }
+.btn.warm { background: var(--warm); color: var(--surface); border-color: var(--warm); }
+.btn.danger { background: transparent; color: var(--warm); border-color: var(--warm); }
+.btn.small { min-height: 36px; padding: 4px 12px; font-size: 0.9rem; }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.row { display: flex; flex-wrap: wrap; gap: 10px; }
+
+/* login */
+.seg { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.seg input { position: absolute; opacity: 0; pointer-events: none; }
+.seg label { display: flex; align-items: center; justify-content: center; min-height: 44px; border: 1.5px solid var(--line); border-radius: 10px; cursor: pointer; font-weight: 700; background: var(--surface); }
+.seg input:checked + label { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
+.seg input:focus-visible + label { outline: 3px solid var(--accent); outline-offset: 2px; }
+.demo-table { width: 100%; border-collapse: collapse; font-size: 0.92rem; }
+.demo-table th, .demo-table td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); }
+.demo-table th { color: var(--muted); font-weight: 600; }
+.err { color: var(--warm); font-weight: 600; min-height: 1.4em; font-size: 0.95rem; }
+.tablewrap { overflow-x: auto; }
+
+/* cek perasaan */
+.q { border: 0; padding: 0; margin: 0; min-width: 0; display: flex; flex-direction: column; gap: 8px; }
+.q legend { font-weight: 600; padding: 0; margin-bottom: 4px; }
+.opts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.opt input { position: absolute; opacity: 0; pointer-events: none; }
+.opt label {
+  display: flex; align-items: center; justify-content: center; text-align: center; min-height: 44px; padding: 6px 8px;
+  border: 1.5px solid var(--line); border-radius: 10px; cursor: pointer; font-size: 0.95rem; background: var(--surface);
+}
+.opt input:checked + label { background: var(--accent); color: var(--on-accent); border-color: var(--accent); font-weight: 700; }
+.opt input:focus-visible + label { outline: 3px solid var(--accent); outline-offset: 2px; }
+.progress { font-size: 0.9rem; color: var(--muted); }
+.result { border-radius: var(--radius); padding: 18px; background: var(--accent-soft); display: flex; flex-direction: column; gap: 10px; }
+.result .level { font-family: var(--font-display); font-size: 1.4rem; font-weight: 700; }
+.result ul { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 4px; }
+.fine { font-size: 0.9rem; color: var(--muted); }
+
+/* latihan tenang */
+.breath { display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 8px 0; }
+.stage { width: 220px; height: 220px; max-width: 100%; display: grid; place-items: center; position: relative; }
+.ring { position: absolute; inset: 0; border: 2px dashed var(--line); border-radius: 50%; }
+.orb {
+  width: 100%; height: 100%; border-radius: 50%; background: var(--accent); opacity: 0.9;
+  transform: scale(0.45); transition-property: transform; transition-timing-function: ease-in-out;
+}
+.orb-label { text-align: center; font-weight: 700; line-height: 1.25; }
+.orb-label b { display: block; font-family: var(--font-display); font-size: 1.5rem; }
+@media (prefers-reduced-motion: reduce) { .orb { transition: none !important; } }
+details { border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+summary { cursor: pointer; font-weight: 700; padding: 12px 14px; min-height: 44px; }
+details p { padding: 0 14px 14px; }
+
+/* kartu pikiran, form */
+label.f { font-weight: 600; display: block; margin-bottom: 4px; }
+textarea, input[type="text"], input[type="password"] {
+  width: 100%; font: inherit; color: var(--fg); background: var(--bg); border: 1.5px solid var(--line); border-radius: 10px; padding: 10px 12px; min-height: 44px;
+}
+textarea { min-height: 84px; resize: vertical; }
+textarea::placeholder, input::placeholder { color: var(--muted); opacity: 0.8; }
+.field { display: flex; flex-direction: column; }
+.example { background: var(--accent-soft); border-radius: var(--radius); padding: 14px 16px; font-size: 0.95rem; display: flex; flex-direction: column; gap: 4px; }
+.saved { display: flex; flex-direction: column; gap: 10px; }
+.saved article, .req { border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; background: var(--surface); display: flex; flex-direction: column; gap: 6px; font-size: 0.95rem; overflow-wrap: anywhere; min-width: 0; }
+.saved small { color: var(--muted); }
+.draft { white-space: pre-wrap; background: var(--bg); border: 1.5px dashed var(--warm-line); border-radius: 10px; padding: 14px; overflow-wrap: anywhere; }
+.status { min-height: 1.4em; font-size: 0.92rem; color: var(--muted); }
+
+/* guru */
+.stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.stat { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 12px; display: flex; flex-direction: column; gap: 2px; }
+.stat b { font-family: var(--font-display); font-size: 1.8rem; line-height: 1; font-variant-numeric: tabular-nums; }
+.stat span { font-size: 0.85rem; color: var(--muted); }
+.pill { display: inline-block; font-size: 0.8rem; font-weight: 700; padding: 2px 10px; border-radius: 999px; }
+.pill.baru { background: var(--warm-soft); color: var(--warm); border: 1px solid var(--warm-line); }
+.pill.jadwal { background: var(--accent-soft); color: var(--accent); }
+.pill.selesai { background: var(--bg); color: var(--muted); border: 1px solid var(--line); }
+.req header { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; flex-wrap: wrap; }
+.req .meta { color: var(--muted); font-size: 0.85rem; }
+.filters { display: flex; gap: 8px; flex-wrap: wrap; }
+.filters button { font: inherit; font-weight: 600; font-size: 0.9rem; border: 1.5px solid var(--line); background: var(--surface); color: var(--fg); border-radius: 999px; padding: 6px 14px; min-height: 40px; cursor: pointer; }
+.filters button[aria-pressed="true"] { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
+.badge { display: inline-block; font-size: 0.75rem; font-weight: 700; border-radius: 999px; padding: 0 7px; margin-left: 4px; background: var(--warm); color: var(--surface); }
+.sample-tag { font-size: 0.75rem; font-weight: 700; color: var(--muted); border: 1px dashed var(--line); border-radius: 6px; padding: 0 6px; margin-left: 6px; }
+
+/* kotak bantuan */
+.help {
+  background: var(--warm-soft); border: 1.5px solid var(--warm-line); border-radius: var(--radius); padding: 14px 16px; display: flex; flex-direction: column; gap: 6px; font-size: 0.95rem;
+}
+.help b { color: var(--warm); }
+footer { color: var(--muted); font-size: 0.85rem; text-align: center; padding-top: 4px; }
+
+@media (min-width: 520px) { .opts { grid-template-columns: repeat(4, minmax(0, 1fr)); } h1 { font-size: 2.4rem; } }
+</style>
+<style>
+ol.goal{margin:6px 0 0;padding-left:1.2em}
+.fb{border-radius:10px;padding:10px 12px;font-size:.92rem;margin-top:8px}
+.fb.ok{background:var(--accent-soft);border-left:5px solid var(--accent)}
+.fb.no{background:var(--warm-soft);border-left:5px solid var(--warm)}
+.saved article .btn{align-self:flex-start}
+@media print{header.top,.help,.row,body::before,footer{display:none!important}}
+</style></head><body>
+<header class="top">
+  <div class="top-inner">
+    <div class="top-row">
+      <a class="brand" id="brand" href="#masuk" aria-label="Kelola Cemas, ke halaman utama">
+        <svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="14" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--accent)"/><circle cx="16" cy="16" r="7" fill="currentColor" style="color:var(--accent)"/></svg>
+        Kelola Cemas
+      </a>
+      <div class="userbox" id="userbox" hidden>
+        <span class="chip" id="userChip"></span>
+        <button class="btn ghost small" type="button" id="logout">Keluar</button>
+      </div>
+    </div>
+    <nav id="nav" aria-label="Menu utama" hidden></nav>
+  </div>
+</header>
+<div class="wrap"><main>
+
+<!-- MASUK -->
+<section class="view" data-view="masuk">
+  <div><h1>Kelola Cemas</h1><p class="lead" style="margin-top:8px">Masuk sebagai siswa atau guru BK.</p></div>
+  <form id="f1" class="card" novalidate>
+    <h3>Kode masuk</h3>
+    <div class="field"><label class="f" for="kMasuk">Masukkan kode masuk (4 angka)</label><input type="password" id="kMasuk" inputmode="numeric" maxlength="4" autocomplete="off"></div>
+    <p class="err" id="e1" aria-live="polite"></p>
+    <div class="row"><button class="btn" type="submit">Lanjut</button></div>
+  </form>
+  <form id="f2" class="card" novalidate hidden>
+    <div class="seg" role="radiogroup" aria-label="Masuk sebagai">
+      <div><input type="radio" name="role" id="role-siswa" value="siswa" checked><label for="role-siswa">Siswa</label></div>
+      <div><input type="radio" name="role" id="role-guru" value="guru"><label for="role-guru">Guru BK</label></div>
+    </div>
+    <div class="field"><label class="f" for="lNama">Nama</label><input type="text" id="lNama" maxlength="40" autocomplete="name"></div>
+    <div class="field s-only"><label class="f" for="lKelas">Kelas</label><input type="text" id="lKelas" maxlength="20" placeholder="Contoh: X-2" autocomplete="off"></div>
+    <div class="field s-only"><label class="f" for="lSekolah">Nama sekolah</label><input type="text" id="lSekolah" maxlength="60" autocomplete="off"></div>
+    <div class="field g-only" hidden><label class="f" for="lEmail">Email</label><input type="text" id="lEmail" inputmode="email" placeholder="nama@email.com" autocomplete="email"></div>
+    <div class="field"><label class="f" for="lKode" id="lKodeLabel">Kode siswa (4 angka)</label><input type="password" id="lKode" inputmode="numeric" maxlength="4" autocomplete="off"></div>
+    <p class="err" id="e2" aria-live="polite"></p>
+    <div class="row"><button class="btn" type="submit">Masuk</button><button class="btn ghost" type="button" id="gBack">Ganti kode masuk</button></div>
+  </form>
+  <div class="note warm"><b>Catatan untuk siswa:</b> nama, kelas, nama sekolah, waktu login, serta isianmu (Cek Perasaan, Kartu Pikiran, Uji Pemahaman, dan permintaan konsultasi) tercatat dan dapat dilihat guru BK agar guru bisa memahami situasimu.</div>
+</section>
+
+<!-- BERANDA -->
+<section class="view" data-view="beranda" hidden>
+  <a class="back guru-only" href="#dasbor">← Kembali ke dasbor guru</a>
+  <h1>Kelola Cemas: tenang menghadapi tugas &amp; ujian</h1>
+  <div><h3>Tujuan</h3>
+    <ol class="goal"><li>Mengenali tanda kecemasan akademik.</li><li>Mencoba latihan sederhana untuk menenangkan diri.</li><li>Meninjau ulang pikiran yang membebani.</li><li>Tahu kapan dan bagaimana menghubungi guru BK.</li></ol></div>
+  <div class="menu">
+    <a class="tile" href="#materi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 21V5M9 8h6"/></svg><b>Materi Belajar</b><span>Kenali kecemasan akademik, lalu coba Latihan Tenang.</span></a>
+    <a class="tile" href="#refleksi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 11l3 3 8-8"/><path d="M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9"/></svg><b>Latihan Refleksi</b><span>Cek Perasaan dan Kartu Pikiran.</span></a>
+    <a class="tile" href="#umpan"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 20V10M12 20V4M19 20v-7"/></svg><b>Umpan Balik</b><span>Uji pemahaman dan pendapatmu tentang website.</span></a>
+    <a class="tile warm" href="#konsultasi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg><b>Minta Konsultasi</b><span>Susun pesan singkat untuk guru BK.</span></a>
+  </div>
+  <div class="note"><b>Soal privasi:</b> kamu masuk dengan nama, kelas, nama sekolah, dan kode. Guru BK dapat melihat riwayat login (nama, kelas, sekolah, waktu) beserta isianmu di Cek Perasaan, Kartu Pikiran, Uji Pemahaman, dan Minta Konsultasi, supaya guru bisa membantumu dengan tepat. Umpan Balik tetap tanpa nama.</div>
+  <p class="fine">Website ini bukan diagnosis dan tidak menggantikan guru BK.</p>
+</section>
+
+<!-- MATERI -->
+<section class="view" data-view="materi" hidden>
+  <a class="back" href="#beranda">← Menu</a>
+  <h2>Materi Belajar</h2>
+  <p class="lead">Kenali dulu kecemasan akademik, lalu coba latihannya.</p>
+  <div class="note"><b>Apa itu kecemasan akademik?</b><br>Rasa cemas yang muncul saat menghadapi tugas, ulangan, atau ujian. Ini wajar, terutama di tahun pertama SMA, dan bisa dikelola.</div>
+  <div class="card">
+    <details><summary>1. Pikiran yang penuh kekhawatiran</summary><p>Misalnya “Aku pasti gagal”. Kamu bisa meninjau pikiran ini di Kartu Pikiran.</p></details>
+    <details><summary>2. Tubuh yang tegang</summary><p>Misalnya jantung berdebar atau bahu kaku. Latihan Tenang di bawah membantu tubuh lebih rileks.</p></details>
+    <details><summary>3. Ingin menghindar atau menunda</summary><p>Biasanya mereda ketika pikiran dan tubuh lebih tenang. Jika belum, bicarakan dengan guru BK.</p></details>
+  </div>
+  <h2 style="margin-top:6px">Latihan Tenang</h2>
+  <p class="lead">Ikuti lingkaran: membesar saat menarik napas, mengecil saat menghembuskan.</p>
+  <div class="card">
+    <div class="breath">
+      <div class="stage" aria-hidden="true"><div class="ring"></div><div class="orb" id="orb"></div></div>
+      <div class="orb-label" aria-live="polite"><b id="phase">Siap?</b><span id="count">Tekan Mulai.</span></div>
+      <div class="row"><button class="btn" id="bS" type="button">Mulai</button><button class="btn ghost" id="bX" type="button" disabled>Berhenti</button></div>
+    </div>
+    <h3>Napas pelan</h3>
+    <p>Duduklah dengan nyaman. Tarik napas lewat hidung sambil menghitung sampai empat. Tahan sebentar. Hembuskan pelan lewat mulut sambil menghitung sampai enam. Ulangi lima kali.</p>
+  </div>
+  <div class="card">
+    <h3>Relaksasi otot tiga langkah</h3>
+    <details><summary>1. Bahu</summary><p>Angkat kedua bahu ke arah telinga, tahan lima detik, lalu lepaskan.</p></details>
+    <details><summary>2. Tangan</summary><p>Kepalkan kedua tangan, tahan lima detik, lalu lepaskan.</p></details>
+    <details><summary>3. Wajah</summary><p>Kerutkan dahi dan pejamkan mata dengan kuat, tahan lima detik, lalu lepaskan.</p></details>
+    <p class="fine">Hentikan latihan jika terasa nyeri atau pusing.</p>
+  </div>
+</section>
+
+<!-- LATIHAN REFLEKSI -->
+<section class="view" data-view="refleksi" hidden>
+  <a class="back" href="#beranda">← Menu</a>
+  <h2>Cek Perasaan</h2>
+  <p class="lead">Pilih jawaban yang paling sesuai dengan perasaanmu selama seminggu terakhir. Tidak ada jawaban benar atau salah.</p>
+  <form id="cekForm" class="card" novalidate></form>
+  <div id="cekResult" aria-live="polite"></div>
+  <h2 style="margin-top:10px">Kartu Pikiran</h2>
+  <p class="lead">Tuliskan pikiran yang mengganggu, lalu cari pikiran yang lebih tepat.</p>
+  <div class="example"><b>Contoh</b><span>Situasi: nilai ulangan matematikaku rendah. Pikiranku saat itu: “Aku pasti gagal di semester ini.” Pikiran yang lebih tepat: “Satu nilai belum menentukan seluruh semester. Aku bisa mempelajari lagi bagian yang belum paham dan bertanya kepada guru.”</span></div>
+  <form id="kartuForm" class="card" novalidate>
+    <div class="field"><label class="f" for="k1">Situasi (apa yang terjadi?)</label><textarea id="k1"></textarea></div>
+    <div class="field"><label class="f" for="k2">Pikiranku saat itu</label><textarea id="k2"></textarea></div>
+    <div class="field"><label class="f" for="k3">Pikiran yang lebih tepat</label><textarea id="k3"></textarea></div>
+    <div class="row"><button class="btn" type="submit">Tampilkan &amp; simpan kartu</button><button class="btn ghost" type="button" onclick="window.print()">Cetak</button></div>
+  </form>
+  <div class="card">
+    <div class="saved" id="savedList" aria-live="polite"></div>
+    <div class="row"><button class="btn danger" type="button" id="bHapus">Hapus catatan saya</button></div>
+    <p class="fine" id="kSt"></p>
+  </div>
+</section>
+
+<!-- UMPAN BALIK -->
+<section class="view" data-view="umpan" hidden>
+  <a class="back" href="#beranda">← Menu</a>
+  <h2>Umpan Balik</h2>
+  <h3>Bagian 1: Uji Pemahaman</h3>
+  <p class="lead">Lima pernyataan tentang isi website ini. Pilih “Tepat” atau “Kurang tepat”, lalu baca penjelasannya. Ini bukan penilaian, hanya untuk belajar.</p>
+  <div class="card" id="ujiQs"></div>
+  <div id="ujiRes" class="result" hidden aria-live="polite"></div>
+  <div class="row"><button class="btn ghost" type="button" id="bUji">Ulangi Uji Pemahaman</button></div>
+  <h3 style="margin-top:8px">Bagian 2: Pendapatmu tentang Website</h3>
+  <p class="lead">Dua pertanyaan singkat tentang website ini. Tanpa nama.</p>
+  <div class="card">
+    <fieldset class="q"><legend>1. Petunjuk pada setiap menu mudah saya pahami.</legend>
+      <div class="opts"><div class="opt"><input type="radio" name="u1" id="u1y" value="Ya"><label for="u1y">Ya</label></div><div class="opt"><input type="radio" name="u1" id="u1t" value="Tidak"><label for="u1t">Tidak</label></div></div></fieldset>
+    <div class="field"><label class="f" for="u2">2. Apa yang menurutmu perlu diperbaiki atau ditambah?</label><textarea id="u2"></textarea></div>
+    <div class="row"><button class="btn" type="button" id="bKirim">Kirim umpan balik</button></div>
+    <p class="status" id="ufOk" aria-live="polite"></p>
+  </div>
+  <div id="ufHasil" class="card" hidden>
+    <div class="draft" id="ufTeks"></div>
+    <div class="row"><button class="btn" type="button" id="bSalinU">Salin</button><a class="btn ghost" id="ufWa" target="_blank" rel="noopener">Kirim lewat WhatsApp</a></div>
+    <p class="fine" id="ufNote">Tidak ada yang terkirim otomatis. Kamu yang memutuskan mengirimnya.</p>
+  </div>
+</section>
+
+<!-- MINTA KONSULTASI -->
+<section class="view" data-view="konsultasi" hidden>
+  <a class="back" href="#beranda">← Menu</a>
+  <h2>Minta Konsultasi</h2>
+  <p class="lead">Susun pesan singkat untuk guru BK. Pesan tidak dikirim otomatis: kamu yang memutuskan kapan dan lewat mana pesan dikirim. Topik dan waktu yang kamu isi tercatat di riwayat guru BK.</p>
+  <form id="konsulForm" class="card" novalidate>
+    <div class="field"><label class="f" for="n1">Nama panggilan &amp; kelas</label><input type="text" id="n1" placeholder="Contoh: Dimas, X-3" autocomplete="off"></div>
+    <div class="field"><label class="f" for="n2">Topik yang ingin dibicarakan</label><input type="text" id="n2" placeholder="Contoh: cemas menjelang ulangan" autocomplete="off"></div>
+    <div class="field"><label class="f" for="n3">Waktu yang cocok</label><input type="text" id="n3" placeholder="Contoh: istirahat kedua" autocomplete="off"></div>
+    <div class="row"><button class="btn warm" type="submit">Susun pesan</button></div>
+  </form>
+  <div class="card" id="pesan" hidden>
+    <h3>Draf pesanmu</h3>
+    <div class="draft" id="pesanTeks"></div>
+    <div class="row"><button class="btn" type="button" id="bSalin">Salin pesan</button><a class="btn ghost" id="kontak" target="_blank" rel="noopener">Hubungi lewat WhatsApp</a></div>
+    <p class="status" id="salinNote" aria-live="polite"></p>
+  </div>
+</section>
+
+<!-- DASBOR GURU -->
+<section class="view" data-view="dasbor" hidden>
+  <div><h1 id="sapaGuru">Selamat datang</h1><p class="fine" id="gEmail" style="margin-top:4px"></p></div>
+  <p class="lead">Berikut riwayat login siswa beserta isian yang mereka kerjakan (Cek Perasaan, Kartu Pikiran, Uji Pemahaman, dan permintaan konsultasi), agar guru bisa memahami kondisi dan situasi siswa.</p>
+  <div class="card">
+    <h3>Riwayat Login Siswa</h3>
+    <p class="fine" id="rsrc"></p>
+    <div class="tablewrap" id="rtab"></div>
+    <div class="row"><button class="btn" type="button" id="rmuat">Muat ulang</button><a class="btn ghost" id="rlink" target="_blank" rel="noopener" hidden>Buka rekap di Google Sheet/Form</a><button class="btn danger" type="button" id="rhapus">Hapus semua riwayat</button></div>
+  </div>
+  <div class="row"><a class="btn ghost" href="#beranda">Buka media siswa</a></div>
+</section>
+
+<!-- KOTAK BANTUAN -->
+<aside class="help" id="help" aria-label="Kotak bantuan" hidden>
+  <span><b>Kotak bantuan.</b> Jika kamu merasa sangat tertekan, hubungi guru BK atau orang dewasa yang kamu percaya.</span>
+  <a href="#konsultasi">Susun pesan untuk guru BK</a>
+</aside>
+<footer>Kelola Cemas · media BK digital</footer>
+</main></div>
+
+<script>
+/* ===== PENGATURAN ===== */
+var KONTAK_BK="https://wa.me/6285892676745"; // nomor WA guru BK (format 62...)
+var LINK_REKAP=""; // link Google Sheet/Form yang dibuka guru BK untuk melihat rekap
+var ENDPOINT="https://script.google.com/macros/s/AKfycbwzE0mrRmllD69VbNMNRQwBklT9NSPTo_XNSK19RSrlyNEW9DOft0GxFnysl5YNxV_v4Q/exec"; // URL Web App Google Apps Script (login dan umpan balik terkirim otomatis, riwayat dibaca dari sini)
+var KODE_MASUK="2026",KODE_SISWA="0509",KODE_GURU="0926";
+/* ====================== */
+(function(){
+var CONTENT=["beranda","materi","refleksi","umpan","konsultasi"];
+var $=function(i){return document.getElementById(i)};
+var okStore=true,mem={},sm={};
+function sget(k,d){try{var r=localStorage.getItem(k);if(r)return JSON.parse(r)}catch(e){okStore=false}return k in mem?mem[k]:d}
+function sset(k,v){mem[k]=v;try{localStorage.setItem(k,JSON.stringify(v))}catch(e){okStore=false}}
+function sdel(k){delete mem[k];try{localStorage.removeItem(k)}catch(e){}}
+function sg(k){try{var r=sessionStorage.getItem(k);if(r)return JSON.parse(r)}catch(e){}return sm[k]||null}
+function sp(k,v){sm[k]=v;try{if(v)sessionStorage.setItem(k,JSON.stringify(v));else sessionStorage.removeItem(k)}catch(e){}}
+function esc(s){return String(s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
+function fmtTgl(i){try{return new Date(i).toLocaleString("id-ID",{day:"numeric",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"})}catch(e){return i}}
+function copyText(t,st,src){function fb(){var r=document.createRange();r.selectNodeContents(src);var s=getSelection();s.removeAllRanges();s.addRange(r);st.textContent="Teks sudah dipilih. Salin dengan menahan teks atau tekan Ctrl+C."}try{navigator.clipboard.writeText(t).then(function(){st.textContent="Tersalin."},fb)}catch(e){fb()}}
+function konfirm(b,fn){if(b._t){clearTimeout(b._t);b._t=null;b.textContent=b.dataset.l;fn();return}b.dataset.l=b.textContent;b.textContent="Klik lagi untuk menghapus";b._t=setTimeout(function(){b._t=null;b.textContent=b.dataset.l},4000)}
+function kirim(d){if(!ENDPOINT)return Promise.resolve();return fetch(ENDPOINT,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(d)})}
+
+/* ---------- rute ---------- */
+var views=document.querySelectorAll("[data-view]"),navEl=$("nav");
+function resolve(){var h=(location.hash||"").slice(1),s=sg("kc-sesi");if(!s)return"masuk";
+  if(s.role==="guru")return(h==="dasbor"||CONTENT.indexOf(h)>=0)?h:"dasbor";
+  return CONTENT.indexOf(h)>=0?h:"beranda"}
+function buildNav(s,v){
+  if(!s){navEl.hidden=true;navEl.innerHTML="";return}
+  var it,cur=v;
+  if(s.role==="guru"){it=[["dasbor","Dasbor",""],["beranda","Telaah media",""]];if(CONTENT.indexOf(v)>=0)cur="beranda"}
+  else it=[["beranda","Beranda &amp; Tujuan",""],["materi","Materi Belajar",""],["refleksi","Latihan Refleksi",""],["umpan","Umpan Balik",""],["konsultasi","Minta Konsultasi","warm"]];
+  navEl.innerHTML=it.map(function(x){return'<a href="#'+x[0]+'" class="'+x[2]+'"'+(x[0]===cur?' aria-current="page"':"")+">"+x[1]+"</a>"}).join("");
+  navEl.hidden=false}
+function render(){
+  var s=sg("kc-sesi"),v=resolve(),g=!!s&&s.role==="guru";
+  stopBreath(true);
+  views.forEach(function(el){el.hidden=el.dataset.view!==v});
+  document.querySelectorAll(".guru-only").forEach(function(el){el.hidden=!g});
+  $("userbox").hidden=!s;
+  if(s)$("userChip").textContent=s.nama+(s.kelas?" · "+s.kelas:"")+" · "+(g?"Guru BK":"Siswa");
+  $("brand").setAttribute("href",s?(g?"#dasbor":"#beranda"):"#masuk");
+  $("help").hidden=!(s&&CONTENT.indexOf(v)>=0);
+  buildNav(s,v);
+  if(v==="masuk"){gateUI();syncRole()}
+  if(v==="dasbor"){$("sapaGuru").textContent="Selamat datang, "+s.nama;$("gEmail").textContent=s.email;riwayat()}
+  if(v==="refleksi")renderKartu();
+  if(v==="konsultasi"&&s.role==="siswa"&&!$("n1").value)$("n1").value=s.nama+", "+s.kelas;
+  window.scrollTo(0,0)}
+window.addEventListener("hashchange",render);
+
+/* ---------- masuk: kode masuk, lalu siswa atau guru ---------- */
+var f1=$("f1"),f2=$("f2");
+function gateUI(){var ok=!!sg("kc-gate");f1.hidden=ok;f2.hidden=!ok}
+function role(){return f2.querySelector('input[name="role"]:checked').value}
+function syncRole(){var g=role()==="guru";
+  document.querySelectorAll(".s-only").forEach(function(e){e.hidden=g});
+  document.querySelectorAll(".g-only").forEach(function(e){e.hidden=!g});
+  $("lKodeLabel").textContent=g?"Kode guru BK (4 angka)":"Kode siswa (4 angka)"}
+f2.addEventListener("change",syncRole);
+["kMasuk","lKode"].forEach(function(i){$(i).addEventListener("input",function(){this.value=this.value.replace(/\D/g,"")})});
+f1.addEventListener("submit",function(e){e.preventDefault();
+  if($("kMasuk").value!==KODE_MASUK){$("e1").textContent="Kode masuk salah. Coba lagi.";$("kMasuk").value="";return}
+  $("e1").textContent="";$("kMasuk").value="";sp("kc-gate",1);gateUI();$("lNama").focus()});
+$("gBack").addEventListener("click",function(){sp("kc-gate",null);$("e2").textContent="";gateUI()});
+function catat(n,kl,sk){var w=new Date().toISOString(),id="s"+Date.now(),a=sget("kc-login",[]);a.push({id:id,w:w,nama:n,kelas:kl,sekolah:sk,hasil:[]});sset("kc-login",a);
+  kirim({jenis:"login",sid:id,nama:n,kelas:kl,sekolah:sk,waktu:new Date(w).toLocaleString("id-ID")}).catch(function(){});return id}
+function rekam(j,d){var s=sg("kc-sesi");if(!s||s.role!=="siswa")return;var w=new Date().toISOString(),a=sget("kc-login",[]);
+  a.forEach(function(x){if(x.id===s.sid){x.hasil=x.hasil||[];x.hasil.push({w:w,j:j,d:d})}});sset("kc-login",a);
+  kirim({jenis:"isian",sid:s.sid,nama:s.nama,kelas:s.kelas,sekolah:s.sekolah,isian:j,detail:d,waktu:new Date(w).toLocaleString("id-ID")}).catch(function(){})}
+f2.addEventListener("submit",function(e){e.preventDefault();
+  var r=role(),n=$("lNama").value.trim(),kl=$("lKelas").value.trim(),sk=$("lSekolah").value.trim(),em=$("lEmail").value.trim().toLowerCase(),er=$("e2");
+  if(!n){er.textContent="Isi nama dulu ya.";return}
+  if(r==="siswa"){if(!kl){er.textContent="Isi kelas dulu ya.";return}if(!sk){er.textContent="Isi nama sekolah dulu ya.";return}}
+  else if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)){er.textContent="Masukkan alamat email yang benar.";return}
+  if($("lKode").value!==(r==="guru"?KODE_GURU:KODE_SISWA)){er.textContent="Kode salah. Coba lagi.";$("lKode").value="";return}
+  er.textContent="";["lNama","lKelas","lSekolah","lEmail","lKode"].forEach(function(i){$(i).value=""});
+  var sid=r==="siswa"?catat(n,kl,sk):"";
+  sp("kc-sesi",{sid:sid,role:r,nama:n,kelas:r==="siswa"?kl:"",sekolah:r==="siswa"?sk:"",email:r==="guru"?em:""});
+  location.hash=r==="guru"?"dasbor":"beranda";render()});
+$("logout").addEventListener("click",function(){
+  sp("kc-sesi",null);sp("kc-gate",null);buildCek();buatUji();
+  ["n1","n2","n3","k1","k2","k3","u2"].forEach(function(i){$(i).value=""});
+  document.querySelectorAll('input[name="u1"]').forEach(function(x){x.checked=false});
+  ["pesan","ufHasil"].forEach(function(i){$(i).hidden=true});$("ufOk").textContent="";
+  location.hash="masuk";render()});
+
+/* ---------- riwayat login (guru BK) ---------- */
+function riwayat(){
+  var src=$("rsrc"),tab=$("rtab"),rl=$("rlink");
+  if(LINK_REKAP){rl.href=LINK_REKAP;rl.hidden=false}else rl.hidden=true;
+  function gambar(rows){tab.innerHTML=rows.length?'<div class="saved">'+rows.map(function(r){var h=r.hasil||[];
+      return'<article><span><b>'+esc(r.nama)+"</b> · "+esc(r.kelas)+" · "+esc(r.sekolah)+"<br><small>Login: "+esc(fmtTgl(r.w))+"</small></span>"+(h.length?"<details><summary>Isian siswa ("+h.length+")</summary>"+h.map(function(x){return"<p><b>"+esc(x.j)+"</b> <small>"+esc(fmtTgl(x.w))+'</small><br><span style="white-space:pre-wrap">'+esc(x.d)+"</span></p>"}).join("")+"</details>":'<span class="fine">Belum ada isian.</span>')+'<button class="btn danger small" type="button" data-id="'+esc(r.id||"")+'" data-i="'+(r._i==null?"":r._i)+'">Hapus riwayat ini</button></article>'}).join("")+"</div>":'<p class="fine">Belum ada siswa yang login.</p>'}
+  if(ENDPOINT){src.textContent="Memuat dari Google Sheet…";
+    fetch(ENDPOINT+"?aksi=riwayat&kode="+KODE_GURU).then(function(r){return r.json()}).then(function(j){
+      if(j.error){src.textContent="Ditolak oleh skrip: "+j.error;return}
+      gambar(j.data||[]);src.textContent="Sumber: Google Sheet ("+(j.data||[]).length+" login terakhir, terbaru di atas)."
+    }).catch(function(){src.textContent="Gagal memuat dari Google Sheet. Periksa ENDPOINT dan skripnya."})}
+  else{gambar(sget("kc-login",[]).map(function(x,i){x._i=i;return x}).reverse());
+    src.textContent="Mode demo: riwayat hanya tersimpan di peramban ini. Isi ENDPOINT agar login dari semua perangkat masuk ke guru BK."}}
+function hapusRiwayat(id,i,semua){
+  var a=sget("kc-login",[]);
+  if(semua)sdel("kc-login");else{a=id?a.filter(function(x){return x.id!==id}):(i!==""?a.filter(function(x,k){return k!==+i}):a);sset("kc-login",a)}
+  if(!ENDPOINT){riwayat();return}
+  $("rsrc").textContent="Menghapus…";
+  fetch(ENDPOINT+"?aksi="+(semua?"hapus_semua":"hapus&sid="+encodeURIComponent(id))+"&kode="+KODE_GURU).then(function(r){return r.json()}).then(function(j){
+    if(j.error){$("rsrc").textContent="Gagal menghapus: "+j.error;return}riwayat()
+  }).catch(function(){$("rsrc").textContent="Gagal menghapus di Google Sheet. Coba lagi."})}
+$("rmuat").addEventListener("click",riwayat);
+$("rtab").addEventListener("click",function(e){var b=e.target.closest("button[data-id]");if(!b)return;konfirm(b,function(){hapusRiwayat(b.getAttribute("data-id"),b.getAttribute("data-i"),false)})});
+$("rhapus").addEventListener("click",function(){konfirm(this,function(){hapusRiwayat("","",true)})});
+
+/* ---------- Cek Perasaan ---------- */
+var BUTIR=["Aku merasa terlalu khawatir ketika memikirkan ujian atau tugas.","Aku sulit berkonsentrasi belajar karena pikiranku penuh kekhawatiran.","Badanku terasa tegang atau jantungku berdebar saat harus menghadapi tugas atau ujian.","Aku takut hasil belajarku mengecewakan orang lain.","Aku menunda belajar karena takut gagal."],PIL=["Tidak pernah","Kadang-kadang","Sering","Hampir selalu"];
+var cf=$("cekForm"),cr=$("cekResult");
+function buildCek(){var h="";
+  BUTIR.forEach(function(t,i){h+='<fieldset class="q"><legend>'+(i+1)+". "+t+'</legend><div class="opts">';
+    PIL.forEach(function(p,j){var id="q"+i+"_"+(j+1);h+='<div class="opt"><input type="radio" name="q'+i+'" id="'+id+'" value="'+(j+1)+'"><label for="'+id+'">'+p+"</label></div>"});
+    h+="</div></fieldset>"});
+  cf.innerHTML=h+'<p class="progress" id="prog" aria-live="polite">Terjawab 0 dari 5</p><div class="row"><button class="btn" type="submit">Lihat gambaran</button><button class="btn ghost" type="button" id="cekReset">Ulangi</button></div>';cr.innerHTML=""}
+function cekN(){var t=0,n=0;for(var i=0;i<5;i++){var c=cf.querySelector('input[name="q'+i+'"]:checked');if(c){t+=+c.value;n++}}return[t,n]}
+cf.addEventListener("change",function(){$("prog").textContent="Terjawab "+cekN()[1]+" dari 5"});
+cf.addEventListener("click",function(e){if(e.target.id==="cekReset")buildCek()});
+cf.addEventListener("submit",function(e){e.preventDefault();var a=cekN(),j,sr;
+  if(a[1]<5){cr.innerHTML='<div class="note">Masih ada butir yang belum kamu jawab. Lengkapi dulu ya.</div>';return}
+  if(a[0]<=9){j="Terasa ringan";sr="Sepertinya kamu cukup terkendali. Kamu tetap bisa mencoba Latihan Tenang sebelum belajar atau ujian."}
+  else if(a[0]<=14){j="Cukup terasa";sr="Ada rasa cemas yang cukup terasa. Coba Latihan Tenang, lalu tulis pikiran yang mengganggu di Kartu Pikiran."}
+  else{j="Terasa berat";sr="Rasa cemasmu terasa berat akhir-akhir ini. Coba Latihan Tenang, dan sebaiknya ceritakan kepada guru BK atau orang dewasa yang kamu percaya."}
+  rekam("Cek Perasaan","Gambaran: "+j+" (skor "+a[0]+" dari 20)\n"+BUTIR.map(function(t,i){return(i+1)+". "+t+" → "+PIL[cf.querySelector('input[name="q'+i+'"]:checked').value-1]}).join("\n"));
+  cr.innerHTML='<div class="result"><span class="level">Gambaran: '+j+"</span><p>"+sr+'</p><p class="fine">Ini hanya gambaran sesaat, bukan diagnosis. Kamu boleh menghubungi guru BK kapan saja.</p><div class="row"><a class="btn" href="#materi">Ke Latihan Tenang</a><a class="btn ghost" href="#konsultasi">Minta Konsultasi</a></div></div>'});
+buildCek();
+
+/* ---------- Latihan Tenang ---------- */
+var orb=$("orb"),ph=$("phase"),ct=$("count"),b1=$("bS"),b2=$("bX"),PH=[["Tarik napas",4,1],["Tahan",1,1],["Hembuskan",6,.45]],tm=null,run=false;
+function setOrb(sc,s){orb.style.transitionDuration=s+"s";orb.style.transform="scale("+sc+")"}
+function stopBreath(silent){if(tm){clearInterval(tm);tm=null}run=false;setOrb(.45,.4);b1.disabled=false;b2.disabled=true;if(silent){ph.textContent="Siap?";ct.textContent="Tekan Mulai."}}
+b1.addEventListener("click",function(){if(run)return;run=true;b1.disabled=true;b2.disabled=false;var rd=1,p=0,left;
+  function enter(){var x=PH[p];left=x[1];ph.textContent=x[0];ct.textContent=left+" · putaran "+rd+" dari 5";setOrb(x[2],x[0]==="Tahan"?.1:x[1])}
+  enter();
+  tm=setInterval(function(){left--;if(left>0){ct.textContent=left+" · putaran "+rd+" dari 5";return}
+    p++;if(p>=PH.length){p=0;rd++;if(rd>5){stopBreath(false);ph.textContent="Selesai";ct.textContent="Bagaimana rasanya sekarang?";return}}enter()},1000)});
+b2.addEventListener("click",function(){stopBreath(true)});
+
+/* ---------- Kartu Pikiran (opsional, hanya di peramban) ---------- */
+function kKey(){var s=sg("kc-sesi");return"kelolacemas-kartu-"+(s&&s.role==="siswa"?(s.nama+"|"+s.kelas+"|"+s.sekolah).toLowerCase():"guru")}
+function renderKartu(){var l=sget(kKey(),[]);
+  $("savedList").innerHTML=l.length?l.map(function(c,i){return'<article><small>'+esc(c.t)+"</small><span><b>Situasi:</b> "+esc(c.a)+"</span><span><b>Pikiranku:</b> "+esc(c.b)+"</span><span><b>Lebih tepat:</b> "+esc(c.c)+'</span><button class="btn ghost small" type="button" data-del="'+i+'">Hapus kartu ini</button></article>'}).join(""):'<p class="fine">Belum ada kartu tersimpan.</p>';
+  $("bHapus").hidden=!l.length;
+  $("kSt").textContent=okStore?"Kartu yang kamu simpan dapat dilihat guru BK lewat riwayat login. Menghapus kartu di sini tidak menghapus catatan yang sudah terlihat guru.":"Penyimpanan tidak tersedia di peramban ini. Gunakan tombol Cetak atau tangkapan layar untuk menyimpan kartu."}
+$("kartuForm").addEventListener("submit",function(e){e.preventDefault();
+  var a=$("k1").value.trim(),b=$("k2").value.trim(),c=$("k3").value.trim();
+  if(!a||!b||!c){$("kSt").textContent="Isi ketiga kolom dulu ya.";return}
+  var l=sget(kKey(),[]);l.unshift({a:a,b:b,c:c,t:new Date().toLocaleDateString("id-ID")});sset(kKey(),l);rekam("Kartu Pikiran","Situasi: "+a+"\nPikiranku: "+b+"\nLebih tepat: "+c);
+  ["k1","k2","k3"].forEach(function(i){$(i).value=""});renderKartu()});
+$("savedList").addEventListener("click",function(e){var d=e.target.getAttribute("data-del");if(d===null)return;var l=sget(kKey(),[]);l.splice(+d,1);sset(kKey(),l);renderKartu()});
+$("bHapus").addEventListener("click",function(){konfirm(this,function(){sset(kKey(),[]);sdel(kKey());renderKartu()})});
+
+/* ---------- Minta Konsultasi: hanya menyusun teks ---------- */
+$("konsulForm").addEventListener("submit",function(e){e.preventDefault();
+  var n=$("n1").value.trim()||"(nama panggilan & kelas)",t=$("n2").value.trim()||"(topik yang ingin dibicarakan)",w=$("n3").value.trim()||"(waktu yang cocok)";
+  var s="Selamat siang Bapak/Ibu guru BK. Saya "+n+". Saya ingin berkonsultasi tentang "+t+". Waktu yang cocok untuk saya: "+w+". Terima kasih.";
+  rekam("Minta Konsultasi","Topik: "+t+"\nWaktu: "+w);$("pesanTeks").textContent=s;$("pesan").hidden=false;$("salinNote").textContent="";$("kontak").href=KONTAK_BK+"?text="+encodeURIComponent(s)});
+$("bSalin").addEventListener("click",function(){copyText($("pesanTeks").textContent,$("salinNote"),$("pesanTeks"))});
+
+/* ---------- Umpan Balik ---------- */
+var UJI=[
+{t:"Saat cemas menjelang ujian, napas pelan dan relaksasi otot bisa membantu tubuh menjadi lebih tenang.",a:"Tepat",e:"Napas pelan dan melepaskan ketegangan otot membantu tubuh keluar dari rasa tegang. Itulah fungsi Latihan Tenang."},
+{t:"Hasil Cek Perasaan adalah diagnosis bahwa aku mengalami gangguan kecemasan.",a:"Kurang tepat",e:"Cek Perasaan hanya memberi gambaran sesaat tentang perasaanmu selama seminggu terakhir. Ini bukan diagnosis dan tidak memberi label."},
+{t:"Setelah satu nilai ulangan rendah, pikiran “Aku pasti gagal di semester ini” sudah merupakan pikiran yang tepat.",a:"Kurang tepat",e:"Satu nilai belum menentukan seluruh semester. Kartu Pikiran membantumu mengganti pikiran itu dengan yang lebih tepat, misalnya mempelajari lagi bagian yang belum paham."},
+{t:"Jika rasa cemasku terasa sangat berat, sebaiknya aku menceritakannya kepada guru BK atau orang dewasa yang kupercaya.",a:"Tepat",e:"Website ini hanya membantu secara mandiri dan tidak menggantikan guru BK. Bercerita kepada orang yang tepat adalah langkah yang baik."},
+{t:"Catatan Kartu Pikiran yang kutulis otomatis dikirim ke guru BK.",a:"Tepat",e:"Kartu yang kamu simpan dapat dilihat guru BK lewat riwayat login supaya guru bisa memahami situasimu dan membantumu."}
+];
+var uj=[];
+function buatUji(){uj=[];var h="";
+  UJI.forEach(function(u,i){h+='<div class="q"><p><b>'+(i+1)+".</b> "+u.t+'</p><div class="row"><button class="btn ghost" type="button" data-u="'+i+'" data-v="Tepat">Tepat</button><button class="btn ghost" type="button" data-u="'+i+'" data-v="Kurang tepat">Kurang tepat</button></div><div id="uf'+i+'" aria-live="polite"></div></div>'});
+  $("ujiQs").innerHTML=h;$("ujiRes").hidden=true}
+$("ujiQs").addEventListener("click",function(e){var b=e.target.closest("button[data-u]");if(!b)return;
+  var i=+b.dataset.u,v=b.dataset.v;if(uj[i])return;uj[i]=v;var u=UJI[i],ok=v===u.a;
+  b.parentNode.querySelectorAll("button").forEach(function(x){x.disabled=true});
+  $("uf"+i).innerHTML='<div class="fb '+(ok?"ok":"no")+'"><b>Jawabanmu '+(ok?"tepat":"kurang tepat")+".</b> "+(ok?"":"Yang lebih tepat: <b>"+u.a+"</b>. ")+u.e+"</div>";
+  var n=0,t=0;UJI.forEach(function(x,j){if(uj[j]){n++;if(uj[j]===x.a)t++}});
+  if(n===UJI.length){rekam("Uji Pemahaman",t+" dari "+UJI.length+" jawaban tepat");var r=$("ujiRes");r.hidden=false;r.innerHTML="<b>"+t+" dari "+UJI.length+" jawabanmu tepat.</b><p>Tidak apa-apa jika ada yang masih kurang tepat. Baca lagi penjelasannya, atau coba lagi fitur yang terkait.</p>"}});
+$("bUji").addEventListener("click",buatUji);
+buatUji();
+$("bKirim").addEventListener("click",function(){
+  var c=document.querySelector('input[name="u1"]:checked'),ok=$("ufOk");
+  if(!c){ok.textContent="Jawab soal 1 dulu ya.";return}
+  var sar=$("u2").value.trim()||"-";
+  function susun(){var s="Umpan balik Kelola Cemas (tanpa nama).\n1) Petunjuk mudah dipahami: "+c.value+"\n2) Yang perlu diperbaiki/ditambah: "+sar;
+    $("ufTeks").textContent=s;$("ufHasil").hidden=false;$("ufWa").href=KONTAK_BK+"?text="+encodeURIComponent(s)}
+  if(!ENDPOINT){ok.textContent="";susun();return}
+  ok.textContent="Mengirim…";
+  kirim({jenis:"umpan",u1:c.value,u2:sar,waktu:new Date().toLocaleString("id-ID")}).then(function(){ok.textContent="Terima kasih! Umpan balikmu sudah dikirim ke konselor (tanpa nama).";$("u2").value=""}).catch(function(){ok.textContent="Gagal mengirim otomatis. Kamu bisa mengirimnya manual di bawah.";susun()})});
+$("bSalinU").addEventListener("click",function(){copyText($("ufTeks").textContent,$("ufNote"),$("ufTeks"))});
+
+render();
+})();
+</script>
+</body></html>
